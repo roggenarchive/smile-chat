@@ -1,18 +1,36 @@
 import React from 'react';
 import {
-  Text, View, TextInput,
-  Button, StatusBar, ScrollView,
-  Image, StyleSheet,
+  Text, 
+  View, 
+  TextInput,
+  Button, 
+  StatusBar, 
+  ScrollView,
+  Image, 
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  FlatList,
 } from 'react-native';
 import firebase from 'firebase';
 
-class App extends React.Component {
+import Header from './Header';
+
+const NAME = '@jugendhackt';
+const CHANNEL = 'Random';
+const AVATAR =
+  'https://pbs.twimg.com/profile_images/874276197357596672/kUuht00m_400x400.jpg';
+
+
+export default class App extends React.Component {
   constructor() {
     super();
 
     this.state = {
-      newTodo: '',
-      todos: [],
+      newMessage: '',
+      messages: [],
+      typing: '',
+      messages: [],
       loading: true,
     };
 
@@ -30,65 +48,65 @@ class App extends React.Component {
 
 
     // Get a reference to the database service
-    this.firebaseRef = firebase.database().ref('todos');
+    this.firebaseRef = firebase.database().ref('messages');
 
-    this.getTodos = this.getTodos.bind(this);
-    this.saveTodos = this.saveTodos.bind(this);
+    this.getMessages = this.getMessages.bind(this);
+    this.saveMessages = this.saveMessages.bind(this);
 
     this.handleChangeText = this.handleChangeText.bind(this);
     this.handlePress = this.handlePress.bind(this);
-    this.renderTodos = this.renderTodos.bind(this);
+    this.renderMessages = this.renderMessages.bind(this);
   }
 
   componentDidMount() {
-    this.getTodos();
+    this.getMessages();
   }
 
-  getTodos() {
+  getMessages() {
     this.firebaseRef.on('value', (snapshot) => {
-      const todos = snapshot.val() || [];
+      const messages = snapshot.val() || [];
 
       this.setState({
-        todos,
+        messages,
         loading: false,
       });
     });
   }
 
-  saveTodos(todos) {
-    this.firebaseRef.set(todos);
+  saveMessages(messages) {
+    this.firebaseRef.set(messages);
   }
 
   handleChangeText(text) {
     this.setState({
-      newTodo: text,
+      newMessage: text,
     });
   }
 
   handlePress() {
-    const { newTodo, todos } = this.state;
+    const { newMessage, messages } = this.state;
 
-    const updatedTodos = todos.concat([newTodo]);
+    const updatedMessages = messages.concat([newMessage]);
 
     this.setState({
-      todos: updatedTodos,
-      newTodo: '',
-    }, () => this.saveTodos(updatedTodos));
+      messages: updatedMessages,
+      newMessage: '',
+    }, () => this.saveMessages(updatedMessages));
   }
 
-  renderTodos() {
-    const { todos } = this.state;
-    if (todos.length === 0) {
-      return <Text>No Todos Yet. Add your first one!</Text>
+  renderMessages() {
+    const { messages } = this.state;
+    if (messages.length === 0) {
+      return <Text>No Messages Yet. Add your first one!</Text>
     }
 
-    return todos.map((todo, index) => (
-      <Text
-        key={todo + index}
-        style={styles.todo}
-      >
-        {index + 1}) {todo}
-      </Text>
+    return messages.map((message, index) => (
+      <View style={styles.row}>
+        <View style={styles.rowText}>
+          <Text style={styles.message}>{message}</Text>
+        </View>
+      </View>
+
     ));
   }
 
@@ -96,43 +114,40 @@ class App extends React.Component {
     const { loading } = this.state;
 
     return (
+
+      
       <View style={styles.container}>
-        <Image
-          style={styles.image}
-          source={{ uri: 'http://i.imgur.com/5NOt0wv.png' }}
-        />
-
-        <Text style={styles.title}>
-          FIREBASE TO DO LIST
-        </Text>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            onChangeText={text => this.handleChangeText(text)}
-            value={this.state.newTodo}
-            placeholder={'Enter a new TO DO'}
-            autoCorrect={false}
-            autoCapitalize={'none'}
-            underlineColorAndroid={'transparent'}
-          />
-        </View>
-
-        <Button
-          title={'Add TO DO'}
-          onPress={this.handlePress}
-          color={'#e67e22'}
-        />
-
-        <ScrollView style={styles.todosContainer}>
+       
+        <Header title={CHANNEL} />
+        
+        <ScrollView style={styles.messagesContainer}>
           { loading ?
-            <Text>LOADING TODO LIST...</Text>
+            <Text> </Text>
             :
-            this.renderTodos()
+            this.renderMessages()
           }
         </ScrollView>
 
-        <StatusBar barStyle={'dark-content'} />
+        <KeyboardAvoidingView behavior="padding">
+          <View style={styles.footer}>
+            <TextInput 
+              value={this.state.newMessage}
+              style={styles.input}
+              underlineColorAndroid="transparent"
+              autoCorrect={false}
+              autoCapitalize={'none'}
+              placeholder="Type something nice"
+              onChangeText={text => this.handleChangeText(text)}
+            />
+            <TouchableOpacity onPress={this.sendMessage}>
+              <Button                
+                style={styles.send}
+                title={'SEND'}
+                onPress={this.handlePress}
+              /> 
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </View>
     );
   }
@@ -141,44 +156,59 @@ class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#ecf0f1',
-    paddingTop: 40,
+    backgroundColor: '#fff'
   },
-  image: {
-    width: 80,
-    height: 80,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    textAlign: 'center',
-    color: '#34495e',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  inputContainer: {
-    alignItems: 'center',
-  },
-  input: {
-    height: 50,
-    width: 300,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    margin: 10,
-    padding: 15,
-  },
-  todosContainer: {
-    backgroundColor: '#DDD',
-    alignSelf: 'stretch',
+  row: {
+    flexDirection: 'row',
     padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee'
   },
-  todo: {
-    color: '#444',
-    fontSize: 14,
-    fontWeight: '700',
-    fontStyle: 'italic',
-    marginBottom: 10,
+  avatar: {
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    marginRight: 10
+  },
+  rowText: {
+    flex: 1
+  },
+  message: {
+    fontSize: 18
+  },
+  sender: {
+    fontWeight: 'bold',
+    paddingRight: 10
+  },
+  footer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderColor: 'transparent',    
+    padding: 10
+  },  
+  input: {
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    borderColor: '#ccc',    
+    fontSize: 18,
+    paddingLeft: 10,
+    borderRadius: 45,
+    borderWidth: 0.4,
+    flex: 1
+  }, 
+  send: {
+    alignSelf: 'center',
+    color: '#ffcc36',
+    fontSize: 16,
+    fontWeight: 'bold',
+    padding: 20,
+    borderRadius: 45,
+    borderWidth: 1
+  },  
+  messagesContainer: {
+    borderColor: '#fff',
+    alignSelf: 'stretch',
+    padding: 10
   },
 });
 
