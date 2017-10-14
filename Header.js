@@ -9,12 +9,14 @@ import {
 export default class Header extends React.Component {
   render() {
     return (
+
       <View style={styles.header}>
         <StatusBar backgroundColor="#312E40" barStyle="light-content" />
         <Text style={styles.title}>
           #{this.props.title}
         </Text>
       </View>
+      
     );
   }
 }

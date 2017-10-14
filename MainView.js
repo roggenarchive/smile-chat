@@ -13,18 +13,9 @@ import firebase from 'firebase';
 import styles from './Styles';
 import Header from './Header';
 
+const NICKNAME = 'NICKNAME';
 const NAME = '@jugendhackt';
 const CHANNEL = 'jugendhackt';
-
-export default class MainView extends React.Component {
-  constructor() {
-    super();
-
-    this.state = {
-      newMessage: '',
-      messages: [],
-      loading: true,
-    };
 
     // Initialize Firebase
     var config = {
@@ -36,6 +27,18 @@ export default class MainView extends React.Component {
       messagingSenderId: "259119855896"
     };
     firebase.initializeApp(config);
+
+export default class MainView extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      newMessage: '',
+      messages: [],
+      loading: true,
+    };
+
+
 
 
 
@@ -74,18 +77,20 @@ export default class MainView extends React.Component {
     const { newMessage, messages } = this.state;
 
     const updatedMessages = messages.concat([newMessage]);
-
+  if (newMessage != ""){
     this.setState({
       messages: updatedMessages,
       newMessage: '',
     }, () => this.saveMessages(updatedMessages));
+  }
+
   }
   renderMessages() {
     const { messages } = this.state;
     if (messages.length === 0) {
       return (
       
-        <View style={styles.row}>
+      <View style={styles.row}>
         <View style={styles.rowText}>
           <Text style={styles.message}>No Messages Yet. Add your first one!</Text>
         </View>
@@ -93,30 +98,31 @@ export default class MainView extends React.Component {
       ) 
   }
   return messages.map((message, index) => (
+    
       <View style={styles.row}>
         <View style={styles.rowText}>
-          <Text style={styles.message}>{message}</Text>
-        </View>
+          <Text style={styles.nickname}> {NICKNAME} </Text>
+            <Text style={styles.message}>{message}</Text>
+          </View>
       </View>
 
     ));
   }
 
   render() {
-    const fontSize = 30;
     const { loading } = this.state;
 
     return (      
         <View style={styles.container}>
           <Header title={CHANNEL} />
-          
-          <ScrollView style={styles.messagesContainer}>
-            { loading ?
-              <Text> </Text>
-              :
-              this.renderMessages()
-            }
-          </ScrollView>
+            <ScrollView style={styles.messagesContainer}>
+              { loading ?
+                <Text> </Text>
+                :
+                this.renderMessages()
+              }
+              <Text style={{paddingBottom: 5}}></Text>
+            </ScrollView>
 
           <KeyboardAvoidingView behavior="padding">
             <View style={styles.footer}>
@@ -132,8 +138,7 @@ export default class MainView extends React.Component {
               <TouchableOpacity onPress={this.handlePress} 
                       style={styles.send}>
                 <Text style={styles.sendIcon}
-                      y={(10 / 2)}
-                      dy={fontSize * -0.25}>➤</Text>
+                      y={(10 / 2) + 8}>➤</Text>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>

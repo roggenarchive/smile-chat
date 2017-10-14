@@ -10,10 +10,14 @@ import {OffCanvas3D} from 'react-native-off-canvas-menu';
 import MainView from './MainView';
 import ControlPanel from './ControlPanel';
 import WebScreen from './WebScreen';
+import Login from './Login';
 
+console.disableYellowBox = true;
 
 export default class App extends React.Component {
   
+  
+
   state = {
     menuOpen: false,
   }
@@ -42,6 +46,10 @@ export default class App extends React.Component {
             {
               title: 'GUIDE',
               renderScene: <WebScreen/>
+            },
+            {
+              title: 'LOGIN',
+              renderScene: <Login/>
             }
           ]}/>
         </View>
